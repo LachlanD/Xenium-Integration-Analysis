@@ -71,6 +71,12 @@ combined.obj <- IntegrateData(anchorset = anchors)
 
 DefaultAssay(combined.obj) <- "integrated"
 
+RNA<-combined.obj@assays$integrated
+combined.obj@assays$RNA<-RNA
+
+
+DefaultAssay(combined.obj) <- "RNA"
+
 # Run the standard workflow for visualization and clustering
 combined.obj <- ScaleData(combined.obj, verbose = FALSE)
 combined.obj <- RunPCA(combined.obj, npcs = 30, verbose = FALSE)
@@ -82,25 +88,50 @@ p1 <- DimPlot(combined.obj, reduction = "umap", group.by = "disease", raster=FAL
 p2 <- DimPlot(combined.obj, reduction = "umap", label = TRUE, repel = TRUE, raster=FALSE)
 p1 + p2
 
-DimPlot(combined.obj, reduction = "umap", split.by = "disease", raster=FALSE)
+DimPlot(combined.obj, reduction = "umap", split.by = "disease", raster=FALSE, label = TRUE)
 
-RNA<-combined.obj@assays$integrated
-combined.obj@assays$RNA<-RNA
+p1 <- ImageDimPlot(combined.obj, fov = "fov.1",cols = "red", cells = WhichCells(combined.obj, idents = 2))
+p2 <- ImageDimPlot(combined.obj, fov = "fov", ,cols = "red", cells = WhichCells(combined.obj, idents = 2))
+p1 + p2
 
 
-DefaultAssay(combined.obj) <- "RNA"
-nk.markers <- FindConservedMarkers(combined.obj, ident.1 = 6, grouping.var = "disease", verbose = FALSE)
+nk.markers <- FindConservedMarkers(combined.obj, ident.1 = 2, grouping.var = "disease", verbose = FALSE)
+head(nk.markers)
+
+nk.markers <- FindConservedMarkers(combined.obj, ident.1 = 8, grouping.var = "disease", verbose = FALSE)
 head(nk.markers)
 
 
 FeaturePlot(combined.obj , features = c("Nxph3", "Plp1", "Slc17a7", "Apod", "Cpne6", "Nrn1"), min.cutoff = "q9", raster=FALSE)
 
+combined.obj$celltype.disease <- paste(Idents(combined.obj), combined.obj$disease, sep = "_")
+combined.obj$celltype <- Idents(combined.obj)
+Idents(combined.obj) <- "celltype.disease"
 
-mk <- FindMarkers(combined.obj, group.by = "disease", ident.1="wild", ident.2 = "TgCRND8",  verbose = FALSE)
-head(mk, 15)
 
-p1 <- ImageDimPlot(combined.obj, fov = "fov", molecules = c("Vip", "Nts", "Penk", "Pvalb"), nmols = 50000, alpha = 0.1)
-p2 <- ImageDimPlot(combined.obj, fov = "fov.1", molecules = c("Vip", "Nts", "Penk", "Pvalb"), nmols = 50000, alpha = 0.1)
+#######################################
+#Cluster 2 Analysis
+#######################################
+mk <- FindMarkers(combined.obj,  ident.1="2_wild", ident.2 = "2_TgCRND8",  verbose = FALSE)
+top4 <- rownames(head(mk, 4))
+
+
+p1 <- ImageDimPlot(combined.obj, fov = "fov.1", molecules = top4, nmols = 50000, cols = "white", alpha = 0.5, cells = WhichCells(combined.obj, idents = "2_TgCRND8"))
+p2 <- ImageDimPlot(combined.obj, fov = "fov", molecules = top4, nmols = 50000, cols = "white", alpha = 0.5, cells = WhichCells(combined.obj, idents = "2_wild"))
 p1 + p2
 
-> FeaturePlot(combined.obj , features = c("Vip", "Nts", "Penk", "Pvalb"), split.by = "disease", min.cutoff = "q9", raster=FALSE)
+FeaturePlot(combined.obj , features = top4, split.by = "disease", min.cutoff = "q9", raster=FALSE)
+
+
+#######################################
+#Cluster 8 Analysis
+#######################################
+mk <- FindMarkers(combined.obj,  ident.1="8_wild", ident.2 = "8_TgCRND8",  verbose = FALSE)
+top4 <- rownames(head(mk, 4))
+
+
+p1 <- ImageDimPlot(combined.obj, fov = "fov.1", molecules = top4, nmols = 50000, cols = "white", alpha = 0.5, cells = WhichCells(combined.obj, idents = "8_TgCRND8"))
+p2 <- ImageDimPlot(combined.obj, fov = "fov", molecules = top4, nmols = 50000, cols = "white", alpha = 0.5, cells = WhichCells(combined.obj, idents = "8_wild"))
+p1 + p2
+
+FeaturePlot(combined.obj , features = top4, split.by = "disease", min.cutoff = "q9", raster=FALSE)
