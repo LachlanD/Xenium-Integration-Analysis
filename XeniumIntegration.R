@@ -95,14 +95,22 @@ p2 <- ImageDimPlot(combined.obj, fov = "fov", ,cols = "red", cells = WhichCells(
 p1 + p2
 
 
+##############################################
+#Find markers for annotating clusters
+##############################################
 nk.markers <- FindConservedMarkers(combined.obj, ident.1 = 2, grouping.var = "disease", verbose = FALSE)
 head(nk.markers)
 
 nk.markers <- FindConservedMarkers(combined.obj, ident.1 = 8, grouping.var = "disease", verbose = FALSE)
-head(nk.markers)
+nk6 <- head(nk.markers, 6)
 
 
-FeaturePlot(combined.obj , features = c("Nxph3", "Plp1", "Slc17a7", "Apod", "Cpne6", "Nrn1"), min.cutoff = "q9", raster=FALSE)
+FeaturePlot(combined.obj , features = nk6, min.cutoff = "q9", raster=FALSE)
+
+
+########################################################
+#DGE between disease and wild within the same cluster
+########################################################
 
 combined.obj$celltype.disease <- paste(Idents(combined.obj), combined.obj$disease, sep = "_")
 combined.obj$celltype <- Idents(combined.obj)
@@ -135,3 +143,4 @@ p2 <- ImageDimPlot(combined.obj, fov = "fov", molecules = top4, nmols = 50000, c
 p1 + p2
 
 FeaturePlot(combined.obj , features = top4, split.by = "disease", min.cutoff = "q9", raster=FALSE)
+
